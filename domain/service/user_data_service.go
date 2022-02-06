@@ -8,37 +8,41 @@ import (
 )
 
 type IUserDataService interface {
-	AddUser(*model.User) (int64,error)
+	AddUser(*model.User) (int64, error)
 	DeleteUser(int64) error
-	UpdateUser(user *model.User,isChangePwd bool)(err error)
-	FindUserByName(string) (*model.User,error)
-	CheckPwd(userName string ,pwd string) (isOk bool,err error)
+	UpdateUser(user *model.User, isChangePwd bool) (err error)
+	FindUserById(int64) (*model.User, error)
+	FindUserByName(string) (*model.User, error)
+	CheckPwd(userName string, pwd string) (isOk bool, err error)
 }
+
 //创建实例
-func NewUserDataService(userRepository repository.IUserRepository)IUserDataService  {
-	return &UserDataService{UserRepository:userRepository}
+func NewUserDataService(userRepository repository.IUserRepository) IUserDataService {
+	return &UserDataService{UserRepository: userRepository}
 }
 
 type UserDataService struct {
 	UserRepository repository.IUserRepository
 }
+
 //加密用户密码
-func GeneratePassword(userPassword string) ([]byte,error)  {
-	return bcrypt.GenerateFromPassword([]byte(userPassword),bcrypt.DefaultCost)
+func GeneratePassword(userPassword string) ([]byte, error) {
+	return bcrypt.GenerateFromPassword([]byte(userPassword), bcrypt.DefaultCost)
 }
+
 //验证用户密码
-func ValidatePassword(userPassword string ,hashed string) (isOk bool,err error)  {
-	if err = bcrypt.CompareHashAndPassword([]byte(hashed),[]byte(userPassword));err !=nil {
-		return false,errors.New("密码比对错误")
+func ValidatePassword(userPassword string, hashed string) (isOk bool, err error) {
+	if err = bcrypt.CompareHashAndPassword([]byte(hashed), []byte(userPassword)); err != nil {
+		return false, errors.New("密码比对错误")
 	}
-	return true ,nil
+	return true, nil
 }
 
 //插入用户
-func (u *UserDataService)AddUser(user *model.User) (userID int64,err error){
-	pwdByte,err := GeneratePassword(user.HashPassword)
-	if err !=nil {
-		return user.ID,err
+func (u *UserDataService) AddUser(user *model.User) (userID int64, err error) {
+	pwdByte, err := GeneratePassword(user.HashPassword)
+	if err != nil {
+		return user.ID, err
 	}
 	user.HashPassword = string(pwdByte)
 	//rabbitmq
@@ -46,16 +50,16 @@ func (u *UserDataService)AddUser(user *model.User) (userID int64,err error){
 }
 
 //删除用户
-func (u *UserDataService)DeleteUser(userID int64) error{
+func (u *UserDataService) DeleteUser(userID int64) error {
 	return u.UserRepository.DeleteUserByID(userID)
 }
 
 //更新用户
-func (u *UserDataService)UpdateUser(user *model.User,isChangePwd bool)(err error){
+func (u *UserDataService) UpdateUser(user *model.User, isChangePwd bool) (err error) {
 	//判断是否更新了密码
 	if isChangePwd {
-		pwdByte,err := GeneratePassword(user.HashPassword)
-		if err !=nil {
+		pwdByte, err := GeneratePassword(user.HashPassword)
+		if err != nil {
 			return err
 		}
 		user.HashPassword = string(pwdByte)
@@ -64,17 +68,20 @@ func (u *UserDataService)UpdateUser(user *model.User,isChangePwd bool)(err error
 	return u.UserRepository.UpdateUser(user)
 }
 
+func (u *UserDataService) FindUserById(id int64) (*model.User, error) {
+	return u.UserRepository.FindUserByID(id)
+}
+
 //根据用户名称查找用信息
-func (u *UserDataService)FindUserByName(userName string) (user *model.User,err error){
+func (u *UserDataService) FindUserByName(userName string) (user *model.User, err error) {
 	return u.UserRepository.FindUserByName(userName)
 }
+
 //比对账号密码是否正确
-func (u *UserDataService)CheckPwd(userName string ,pwd string) (isOk bool,err error){
-	user,err:=u.UserRepository.FindUserByName(userName)
-	if err!=nil {
-		return false,err
+func (u *UserDataService) CheckPwd(userName string, pwd string) (isOk bool, err error) {
+	user, err := u.UserRepository.FindUserByName(userName)
+	if err != nil {
+		return false, err
 	}
-	return ValidatePassword(pwd,user.HashPassword)
+	return ValidatePassword(pwd, user.HashPassword)
 }
-
-

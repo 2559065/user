@@ -9,6 +9,8 @@ service User {
     rpc Login(UserLoginRequest) returns (UserLoginResponse) {}
     //查询用户信息
     rpc GetUserInfo(UserInfoRequest) returns (UserInfoResponse) {}
+    //通过id查询用户信息
+    rpc GetUserInfoById(UserId) returns (UserInfoResponse) {}
     // 更改用户信息
     rpc UpdateUserInfo(UserRegisterRequest) returns (UserInfoResponse) {}
     // 删除用户

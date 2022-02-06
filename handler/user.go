@@ -72,3 +72,15 @@ func (u *User) DeleteUser(ctx context.Context, req *user.UserId, res *user.UserR
 	res.Message = "删除成功"
 	return nil
 }
+
+//通过id查询用户信息
+func (u *User) GetUserInfoById(ctx context.Context, req *user.UserId, res *user.UserInfoResponse) error {
+	user, err := u.UserDataService.FindUserById(req.Id)
+	if err != nil {
+		return err
+	}
+	res.UserName = user.UserName
+	res.UserId = user.ID
+	res.FirstName = user.FirstName
+	return nil
+}

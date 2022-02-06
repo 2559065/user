@@ -40,6 +40,8 @@ type UserService interface {
 	Login(ctx context.Context, in *UserLoginRequest, opts ...client.CallOption) (*UserLoginResponse, error)
 	//查询用户信息
 	GetUserInfo(ctx context.Context, in *UserInfoRequest, opts ...client.CallOption) (*UserInfoResponse, error)
+	//通过id查询用户信息
+	GetUserInfoById(ctx context.Context, in *UserId, opts ...client.CallOption) (*UserInfoResponse, error)
 	// 更改用户信息
 	UpdateUserInfo(ctx context.Context, in *UserRegisterRequest, opts ...client.CallOption) (*UserInfoResponse, error)
 	// 删除用户
@@ -94,6 +96,16 @@ func (c *userService) GetUserInfo(ctx context.Context, in *UserInfoRequest, opts
 	return out, nil
 }
 
+func (c *userService) GetUserInfoById(ctx context.Context, in *UserId, opts ...client.CallOption) (*UserInfoResponse, error) {
+	req := c.c.NewRequest(c.name, "User.GetUserInfoById", in)
+	out := new(UserInfoResponse)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *userService) UpdateUserInfo(ctx context.Context, in *UserRegisterRequest, opts ...client.CallOption) (*UserInfoResponse, error) {
 	req := c.c.NewRequest(c.name, "User.UpdateUserInfo", in)
 	out := new(UserInfoResponse)
@@ -123,6 +135,8 @@ type UserHandler interface {
 	Login(context.Context, *UserLoginRequest, *UserLoginResponse) error
 	//查询用户信息
 	GetUserInfo(context.Context, *UserInfoRequest, *UserInfoResponse) error
+	//通过id查询用户信息
+	GetUserInfoById(context.Context, *UserId, *UserInfoResponse) error
 	// 更改用户信息
 	UpdateUserInfo(context.Context, *UserRegisterRequest, *UserInfoResponse) error
 	// 删除用户
@@ -134,6 +148,7 @@ func RegisterUserHandler(s server.Server, hdlr UserHandler, opts ...server.Handl
 		Register(ctx context.Context, in *UserRegisterRequest, out *UserRegisterResponse) error
 		Login(ctx context.Context, in *UserLoginRequest, out *UserLoginResponse) error
 		GetUserInfo(ctx context.Context, in *UserInfoRequest, out *UserInfoResponse) error
+		GetUserInfoById(ctx context.Context, in *UserId, out *UserInfoResponse) error
 		UpdateUserInfo(ctx context.Context, in *UserRegisterRequest, out *UserInfoResponse) error
 		DeleteUser(ctx context.Context, in *UserId, out *UserRegisterResponse) error
 	}
@@ -158,6 +173,10 @@ func (h *userHandler) Login(ctx context.Context, in *UserLoginRequest, out *User
 
 func (h *userHandler) GetUserInfo(ctx context.Context, in *UserInfoRequest, out *UserInfoResponse) error {
 	return h.UserHandler.GetUserInfo(ctx, in, out)
+}
+
+func (h *userHandler) GetUserInfoById(ctx context.Context, in *UserId, out *UserInfoResponse) error {
+	return h.UserHandler.GetUserInfoById(ctx, in, out)
 }
 
 func (h *userHandler) UpdateUserInfo(ctx context.Context, in *UserRegisterRequest, out *UserInfoResponse) error {
