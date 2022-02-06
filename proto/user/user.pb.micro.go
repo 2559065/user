@@ -40,6 +40,10 @@ type UserService interface {
 	Login(ctx context.Context, in *UserLoginRequest, opts ...client.CallOption) (*UserLoginResponse, error)
 	//查询用户信息
 	GetUserInfo(ctx context.Context, in *UserInfoRequest, opts ...client.CallOption) (*UserInfoResponse, error)
+	// 更改用户信息
+	UpdateUserInfo(ctx context.Context, in *UserRegisterRequest, opts ...client.CallOption) (*UserInfoResponse, error)
+	// 删除用户
+	DeleteUser(ctx context.Context, in *UserId, opts ...client.CallOption) (*UserRegisterResponse, error)
 }
 
 type userService struct {
@@ -90,6 +94,26 @@ func (c *userService) GetUserInfo(ctx context.Context, in *UserInfoRequest, opts
 	return out, nil
 }
 
+func (c *userService) UpdateUserInfo(ctx context.Context, in *UserRegisterRequest, opts ...client.CallOption) (*UserInfoResponse, error) {
+	req := c.c.NewRequest(c.name, "User.UpdateUserInfo", in)
+	out := new(UserInfoResponse)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userService) DeleteUser(ctx context.Context, in *UserId, opts ...client.CallOption) (*UserRegisterResponse, error) {
+	req := c.c.NewRequest(c.name, "User.DeleteUser", in)
+	out := new(UserRegisterResponse)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // Server API for User service
 
 type UserHandler interface {
@@ -99,6 +123,10 @@ type UserHandler interface {
 	Login(context.Context, *UserLoginRequest, *UserLoginResponse) error
 	//查询用户信息
 	GetUserInfo(context.Context, *UserInfoRequest, *UserInfoResponse) error
+	// 更改用户信息
+	UpdateUserInfo(context.Context, *UserRegisterRequest, *UserInfoResponse) error
+	// 删除用户
+	DeleteUser(context.Context, *UserId, *UserRegisterResponse) error
 }
 
 func RegisterUserHandler(s server.Server, hdlr UserHandler, opts ...server.HandlerOption) error {
@@ -106,6 +134,8 @@ func RegisterUserHandler(s server.Server, hdlr UserHandler, opts ...server.Handl
 		Register(ctx context.Context, in *UserRegisterRequest, out *UserRegisterResponse) error
 		Login(ctx context.Context, in *UserLoginRequest, out *UserLoginResponse) error
 		GetUserInfo(ctx context.Context, in *UserInfoRequest, out *UserInfoResponse) error
+		UpdateUserInfo(ctx context.Context, in *UserRegisterRequest, out *UserInfoResponse) error
+		DeleteUser(ctx context.Context, in *UserId, out *UserRegisterResponse) error
 	}
 	type User struct {
 		user
@@ -128,4 +158,12 @@ func (h *userHandler) Login(ctx context.Context, in *UserLoginRequest, out *User
 
 func (h *userHandler) GetUserInfo(ctx context.Context, in *UserInfoRequest, out *UserInfoResponse) error {
 	return h.UserHandler.GetUserInfo(ctx, in, out)
+}
+
+func (h *userHandler) UpdateUserInfo(ctx context.Context, in *UserRegisterRequest, out *UserInfoResponse) error {
+	return h.UserHandler.UpdateUserInfo(ctx, in, out)
+}
+
+func (h *userHandler) DeleteUser(ctx context.Context, in *UserId, out *UserRegisterResponse) error {
+	return h.UserHandler.DeleteUser(ctx, in, out)
 }
