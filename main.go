@@ -30,7 +30,7 @@ func main() {
 		}
 	})
 	// 3.jaeger 链路追踪
-	t, io, err := common.NewTracer("go.micro.service.order", "localhost:6831")
+	t, io, err := common.NewTracer("go.micro.service.user", "localhost:6831")
 	if err != nil {
 		log.Error(err)
 	}
